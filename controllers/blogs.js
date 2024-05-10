@@ -12,7 +12,7 @@ blogsRouter.get('/', async (request, response) => {
   response.json(blogs)
 })
 
-blogsRouter.post('/', (request, response, next) => {
+blogsRouter.post('/', async (request, response, next) => {
   const body = request.body
   const blog = new Blog({
     title: body.title,
@@ -20,16 +20,24 @@ blogsRouter.post('/', (request, response, next) => {
     likes: body.likes ? body.likes : 0
   })
 
-  blog
-    .save()
-    .then(result => {
-      response.status(201).json(result)
-    })
-    .catch(err => {
-      if (err.name === "ValidationError")
-        return response.status(400).json({ error: error.message })
-      next(err)
-    })
+  // blog
+  //   .save()
+  //   .then(result => {
+  //     response.status(201).json(result)
+  //   })
+  //   .catch(err => {
+  //     if (err.name === "ValidationError")
+  //       return response.status(400).json({ error: error.message })
+  //     next(err)
+  //   })
+  try {
+    const savedBlog = await blog.save()
+    response.status(201).json(savedBlog)
+  } catch (err) {
+    if (err.name === "ValidationError")
+      return response.status(400).json({ error: error.message })
+    next(err)
+  }
 })
 
 blogsRouter.get('/:id', async (request, response) => {
