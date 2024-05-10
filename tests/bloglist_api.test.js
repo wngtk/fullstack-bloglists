@@ -19,7 +19,6 @@ const initialBlogs = [
 
 const blogsInDb = async () => {
     const blogs = await Blog.find({})
-    console.log(blogs)
     return blogs.map(r => r.toJSON())
 }
 
@@ -72,6 +71,21 @@ test('a valid blog can be added', async () => {
 
     const bloglists = blogListsAtEnd.map(r => r.title)
     assert(bloglists.includes('The Principle of Least Power'))
+})
+
+test('blog without likes can be added with default likes 0', async () => {
+    const newBlog = {
+        title: 'The Principle of Least Power',
+        author: 'Tim Berners-Lee',
+        url: 'https://blog.codinghorror.com/the-principle-of-least-power/',
+    }
+
+    const resultBlog = await api
+        .post('/api/blogs')
+        .expect(201)
+
+    assert.strictEqual(resultBlog.body.likes, 0)
+
 })
 
 after(async () => {
