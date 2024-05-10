@@ -82,10 +82,39 @@ test('blog without likes can be added with default likes 0', async () => {
 
     const resultBlog = await api
         .post('/api/blogs')
+        .send(newBlog)
         .expect(201)
 
     assert.strictEqual(resultBlog.body.likes, 0)
 
+})
+
+test('bloglist without title is not added', async () => {
+    const newBlog = {
+        author: 'Tim Berners-Lee',
+        url: 'https://blog.codinghorror.com/the-principle-of-least-power/',
+    }
+
+    await api
+        .post('/api/blogs')
+        .send(newBlog)
+        .expect(400)
+    const blogListsAtEnd = await blogsInDb()
+    assert.strictEqual(blogListsAtEnd.length, initialBlogs.length)
+})
+
+test('bloglist without url is not added', async () => {
+    const newBlog = {
+        title: 'The Principle of Least Power',
+        author: 'Tim Berners-Lee',
+    }
+
+    await api
+        .post('/api/blogs')
+        .send(newBlog)
+        .expect(400)
+    const blogListsAtEnd = await blogsInDb()
+    assert.strictEqual(blogListsAtEnd.length, initialBlogs.length)
 })
 
 after(async () => {

@@ -1,5 +1,6 @@
 const blogsRouter = require('express').Router()
 const Blog = require('../models/blog')
+const { error } = require('../utils/logger')
 
 blogsRouter.get('/', async (request, response) => {
   // Blog
@@ -11,7 +12,7 @@ blogsRouter.get('/', async (request, response) => {
   response.json(blogs)
 })
 
-blogsRouter.post('/', (request, response) => {
+blogsRouter.post('/', (request, response, next) => {
   const body = request.body
   const blog = new Blog({
     title: body.title,
@@ -23,6 +24,11 @@ blogsRouter.post('/', (request, response) => {
     .save()
     .then(result => {
       response.status(201).json(result)
+    })
+    .catch(err => {
+      if (err.name === "ValidationError")
+        return response.status(400).json({ error: error.message })
+      next(err)
     })
 })
 
