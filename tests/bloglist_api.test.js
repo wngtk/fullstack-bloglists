@@ -53,6 +53,27 @@ test('a specific note can be viewed', async () => {
     assert.deepStrictEqual(resultBlog.body, blogToView)
 })
 
+test('a valid blog can be added', async () => {
+    const newBlog = {
+        title: 'The Principle of Least Power',
+        author: 'Tim Berners-Lee',
+        url: 'https://blog.codinghorror.com/the-principle-of-least-power/',
+        likes: 4
+    }
+
+    await api
+        .post('/api/blogs')
+        .send(newBlog)
+        .expect(201)
+        .expect('Content-Type', /application\/json/)
+
+    const blogListsAtEnd = await blogsInDb()
+    assert.strictEqual(blogListsAtEnd.length, initialBlogs.length + 1)     
+
+    const bloglists = blogListsAtEnd.map(r => r.title)
+    assert(bloglists.includes('The Principle of Least Power'))
+})
+
 after(async () => {
     await mongoose.connection.close()
 })
