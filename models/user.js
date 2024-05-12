@@ -1,6 +1,6 @@
-const { Schema, default: mongoose } = require("mongoose");
+const mongoose = require("mongoose");
 
-const userSchema = new Schema({
+const userSchema = new mongoose.Schema({
     username: {
         type: String,
         minlength: 3,
@@ -11,7 +11,13 @@ const userSchema = new Schema({
     passwordHash: {
         type: String,
         required: true
-    }
+    },
+    blogs: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Blog'
+        }
+    ]
 })
 
 userSchema.set('toJSON', {

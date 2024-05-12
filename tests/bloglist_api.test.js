@@ -5,6 +5,9 @@ const supertest = require('supertest')
 
 const app = require('../app')
 const Blog = require('../models/blog')
+const User = require('../models/user')
+
+const helper = require('./test_helper')
 
 const api = supertest(app)
 
@@ -22,15 +25,23 @@ const blogsInDb = async () => {
     return blogs.map(r => r.toJSON())
 }
 
+let userId
+
 beforeEach(async () => {
+    await User.deleteMany({})
+    await helper.createRootUser()
+    
+    const users = await helper.usersInDb()
+    userId = users[0].id
+    
+    const blogsWithUser = initialBlogs.map(b => ({
+        user: userId,
+        ...b,
+    }))
+    
     await Blog.deleteMany({})
-
-
-    const blogs = initialBlogs.map(blog => new Blog(blog))
-    const promiseArray = blogs.map(blog => blog.save())
-
-    // await all promise be fulfilled
-    await Promise.all(promiseArray)
+    const blogs = blogsWithUser.map(blog => new Blog(blog))
+    await Blog.insertMany(blogs)
 })
 
 test('bloglists are returned as json', async () => {
@@ -48,7 +59,7 @@ test('a specific note can be viewed', async () => {
         .get(`/api/blogs/${blogToView.id}`)
         .expect(200)
         .expect('Content-Type', /application\/json/)
-
+    blogToView.user = blogToView.user.toString()
     assert.deepStrictEqual(resultBlog.body, blogToView)
 })
 
@@ -57,7 +68,8 @@ test('a valid blog can be added', async () => {
         title: 'The Principle of Least Power',
         author: 'Tim Berners-Lee',
         url: 'https://blog.codinghorror.com/the-principle-of-least-power/',
-        likes: 4
+        likes: 4,
+        userId: userId
     }
 
     await api
@@ -78,6 +90,7 @@ test('blog without likes can be added with default likes 0', async () => {
         title: 'The Principle of Least Power',
         author: 'Tim Berners-Lee',
         url: 'https://blog.codinghorror.com/the-principle-of-least-power/',
+        userId
     }
 
     const resultBlog = await api

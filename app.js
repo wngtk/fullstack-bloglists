@@ -25,7 +25,9 @@ app.use('/api/blogs', blogsRouter)
 app.use('/api/users', usersRouter)
 app.use(function errorHandler(error, req, res, next) {
   console.log(error.message);
-  if (error.name === 'MongoServerError' && error.message.includes('E11000 duplicate key error')) {
+  if (error.name === 'CastError') {
+    return res.status(400).send({ error: 'malformatted id' })
+  } else if (error.name === 'MongoServerError' && error.message.includes('E11000 duplicate key error')) {
     return res.status(400).json({ error: 'expected `username` to be unique'})
   }
   next(error)

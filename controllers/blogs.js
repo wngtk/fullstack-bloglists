@@ -1,6 +1,7 @@
 const blogsRouter = require('express').Router()
 const { response } = require('express')
 const Blog = require('../models/blog')
+const User = require('../models/user')
 const { error } = require('../utils/logger')
 
 blogsRouter.get('/', async (request, response) => {
@@ -9,7 +10,10 @@ blogsRouter.get('/', async (request, response) => {
   //   .then(blogs => {
   //     response.json(blogs)
   //   })
-  const blogs = await Blog.find({})
+  const blogs = await Blog
+    .find({})
+    .populate('user', { username: 1}) 
+
   response.json(blogs)
 })
 
@@ -18,8 +22,15 @@ blogsRouter.post('/', async (request, response, next) => {
   const blog = new Blog({
     title: body.title,
     url: body.url,
-    likes: body.likes ? body.likes : 0
+    likes: body.likes ? body.likes : 0,
+    user: body.userId
   })
+
+  const user = await User.findById(body.userId)
+
+  if (!user) {
+    return response.status(400).json({ error: `${body.userId} is not exists`})
+  }
 
   // blog
   //   .save()
@@ -33,6 +44,8 @@ blogsRouter.post('/', async (request, response, next) => {
   //   })
   try {
     const savedBlog = await blog.save()
+    user.blogs = user.blogs.concat(savedBlog.id)
+    await user.save()
     response.status(201).json(savedBlog)
   } catch (err) {
     if (err.name === "ValidationError")
@@ -43,10 +56,11 @@ blogsRouter.post('/', async (request, response, next) => {
 
 blogsRouter.get('/:id', async (request, response) => {
   const blog = await Blog.findById(request.params.id)
-  if (blog)
+  if (blog) {
     response.json(blog)
-  else
+  } else {
     response.status(404).end()
+  }
 })
 
 blogsRouter.delete('/:id', async (req, res) => {
