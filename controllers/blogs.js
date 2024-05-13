@@ -5,13 +5,9 @@ const User = require('../models/user')
 const { error } = require('../utils/logger')
 const jsonwebtoken = require('jsonwebtoken')
 const { SECRET } = require('../utils/config')
+const { userExtractor } = require('../utils/middleware')
 
 blogsRouter.get('/', async (request, response) => {
-  // Blog
-  //   .find({})
-  //   .then(blogs => {
-  //     response.json(blogs)
-  //   })
   const blogs = await Blog
     .find({})
     .populate('user', { username: 1}) 
@@ -19,28 +15,8 @@ blogsRouter.get('/', async (request, response) => {
   response.json(blogs)
 })
 
-const getTokenFrom = (request) => {
-  const authorization = request.get('Authorization')
-  if (authorization && authorization.startsWith('Bearer ')) {
-    return authorization.replace('Bearer ', '')
-  }
-  return null
-}
-
-blogsRouter.post('/', async (request, response, next) => {
-  // const token = getTokenFrom(request)
-
-  // console.log(token)
-
-  const decodedToken = jsonwebtoken.verify(request.token, SECRET)
-
-  if (!decodedToken.id) {
-    return response.status(401).json({
-      error: 'token invalid'
-    })
-  }
-  const user = await User.findById(decodedToken.id)
-
+blogsRouter.post('/', userExtractor, async (request, response, next) => {
+  const user = request.user
   const body = request.body
   const blog = new Blog({
     title: body.title,
@@ -84,12 +60,11 @@ blogsRouter.get('/:id', async (request, response) => {
   }
 })
 
-blogsRouter.delete('/:id', async (req, res) => {
-  console.log(req.token);
-  const decodedToken = jsonwebtoken.verify(req.token, SECRET)
+blogsRouter.delete('/:id', userExtractor, async (req, res) => {
+  const user = req.user
   const blogToDelete = await Blog.findById(req.params.id)
 
-  if (blogToDelete && decodedToken?.id !== blogToDelete.user) {
+  if (blogToDelete && user.id !== blogToDelete.user) {
     return res.status(401).json({
       error: 'this blog is no yours'
     })
