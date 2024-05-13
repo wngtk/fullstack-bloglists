@@ -7,6 +7,7 @@ const mongoose = require('mongoose')
 const logger = require('./utils/logger')
 const config = require('./utils/config')
 const usersRouter = require('./controllers/users')
+const loginRouter = require('./controllers/login')
 
 logger.info('connecting to', config.MONGODB_URI)
 
@@ -23,6 +24,7 @@ app.use(express.json())
 
 app.use('/api/blogs', blogsRouter)
 app.use('/api/users', usersRouter)
+app.use('/api/login', loginRouter)
 app.use(function errorHandler(error, req, res, next) {
   console.log(error.message);
   if (error.name === 'CastError') {
