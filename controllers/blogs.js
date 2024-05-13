@@ -32,7 +32,7 @@ blogsRouter.post('/', async (request, response, next) => {
 
   // console.log(token)
 
-  const decodedToken = await jsonwebtoken.verify(request.token, SECRET)
+  const decodedToken = jsonwebtoken.verify(request.token, SECRET)
 
   if (!decodedToken.id) {
     return response.status(401).json({
@@ -85,6 +85,15 @@ blogsRouter.get('/:id', async (request, response) => {
 })
 
 blogsRouter.delete('/:id', async (req, res) => {
+  console.log(req.token);
+  const decodedToken = jsonwebtoken.verify(req.token, SECRET)
+  const blogToDelete = await Blog.findById(req.params.id)
+
+  if (blogToDelete && decodedToken?.id !== blogToDelete.user) {
+    return res.status(401).json({
+      error: 'this blog is no yours'
+    })
+  }
   await Blog.findByIdAndDelete(req.params.id)
   res.status(204).end()
 })
