@@ -28,11 +28,11 @@ const getTokenFrom = (request) => {
 }
 
 blogsRouter.post('/', async (request, response, next) => {
-  const token = getTokenFrom(request)
+  // const token = getTokenFrom(request)
 
-  console.log(token)
+  // console.log(token)
 
-  const decodedToken = await jsonwebtoken.verify(token, SECRET)
+  const decodedToken = await jsonwebtoken.verify(request.token, SECRET)
 
   if (!decodedToken.id) {
     return response.status(401).json({
