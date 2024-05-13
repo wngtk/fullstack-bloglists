@@ -8,6 +8,8 @@ const Blog = require('../models/blog')
 const User = require('../models/user')
 
 const helper = require('./test_helper')
+const jsonwebtoken = require('jsonwebtoken')
+const { SECRET } = require('../utils/config')
 
 const api = supertest(app)
 
@@ -26,7 +28,7 @@ const blogsInDb = async () => {
 }
 
 let userId
-
+let token
 beforeEach(async () => {
     await User.deleteMany({})
     await helper.createRootUser()
@@ -42,6 +44,12 @@ beforeEach(async () => {
     await Blog.deleteMany({})
     const blogs = blogsWithUser.map(blog => new Blog(blog))
     await Blog.insertMany(blogs)
+
+    const getToken = async () => {
+        return jsonwebtoken.sign({ username: users[0].username, id: userId }, SECRET)
+    }
+    token = await getToken()
+    console.log(token)
 })
 
 test('bloglists are returned as json', async () => {
@@ -74,6 +82,7 @@ test('a valid blog can be added', async () => {
 
     await api
         .post('/api/blogs')
+        .set('Authorization', 'Bearer ' + token)
         .send(newBlog)
         .expect(201)
         .expect('Content-Type', /application\/json/)
@@ -95,6 +104,7 @@ test('blog without likes can be added with default likes 0', async () => {
 
     const resultBlog = await api
         .post('/api/blogs')
+        .set('Authorization', 'Bearer ' + token)
         .send(newBlog)
         .expect(201)
 
@@ -110,6 +120,7 @@ test('bloglist without title is not added', async () => {
 
     await api
         .post('/api/blogs')
+        .set('Authorization', 'Bearer ' + token)
         .send(newBlog)
         .expect(400)
     const blogListsAtEnd = await blogsInDb()
@@ -124,6 +135,7 @@ test('bloglist without url is not added', async () => {
 
     await api
         .post('/api/blogs')
+        .set('Authorization', 'Bearer ' + token)
         .send(newBlog)
         .expect(400)
     const blogListsAtEnd = await blogsInDb()
