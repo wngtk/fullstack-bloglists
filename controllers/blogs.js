@@ -21,6 +21,7 @@ blogsRouter.post('/', userExtractor, async (request, response, next) => {
   const blog = new Blog({
     title: body.title,
     url: body.url,
+    author: body.author,
     likes: body.likes ? body.likes : 0,
     user: user.id
   })
@@ -64,7 +65,7 @@ blogsRouter.delete('/:id', userExtractor, async (req, res) => {
   const user = req.user
   const blogToDelete = await Blog.findById(req.params.id)
 
-  if (blogToDelete && user.id !== blogToDelete.user) {
+  if (blogToDelete && user._id.toString() !== blogToDelete.user._id.toString()) {
     return res.status(401).json({
       error: 'this blog is no yours'
     })
