@@ -3,7 +3,7 @@ const { SECRET } = require("./config")
 const User = require("../models/user")
 
 const tokenExtractor = async (req, res, next) => {
-    const authorization = req.get('Authorization')    
+    const authorization = req.get('Authorization')
     if (authorization?.startsWith('Bearer '))
         req.token = authorization.replace('Bearer ', '')
 
