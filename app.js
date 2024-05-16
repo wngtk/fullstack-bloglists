@@ -9,6 +9,7 @@ const config = require('./utils/config')
 const usersRouter = require('./controllers/users')
 const loginRouter = require('./controllers/login')
 const middleware = require('./utils/middleware')
+const testingRouter = require('./controllers/testing')
 
 logger.info('connecting to', config.MONGODB_URI)
 
@@ -27,6 +28,11 @@ app.use(middleware.tokenExtractor)
 app.use('/api/blogs', blogsRouter)
 app.use('/api/users', usersRouter)
 app.use('/api/login', loginRouter)
+
+if (process.env.NODE_ENV === 'test') {
+  app.use('/api/testing', testingRouter)
+}
+
 app.use(function errorHandler(error, req, res, next) {
   console.log(error.message);
   if (error.name === 'CastError') {
