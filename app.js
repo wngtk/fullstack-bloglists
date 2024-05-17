@@ -29,12 +29,11 @@ app.use('/api/blogs', blogsRouter)
 app.use('/api/users', usersRouter)
 app.use('/api/login', loginRouter)
 
-if (process.env.NODE_ENV === 'test') {
-  app.use('/api/testing', testingRouter)
-}
+app.use('/api/testing', testingRouter)
 
 app.use(function errorHandler(error, req, res, next) {
   console.log(error.message);
+  console.log(error)
   if (error.name === 'CastError') {
     return res.status(400).send({ error: 'malformatted id' })
   } else if (error.name === 'MongoServerError' && error.message.includes('E11000 duplicate key error')) {
