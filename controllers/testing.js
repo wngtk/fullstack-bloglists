@@ -5,8 +5,9 @@ const User = require("../models/user");
 const testingRouter = Router()
 
 testingRouter.post('/reset', async (req, res) => {
-    await Blog.deleteMany({})
-    await User.deleteMany({})
+    console.log(new Date(), 'reseting data in db')
+    console.log(new Date(), 'blogs deleted, deleting users')
+    console.log(new Date(), 'after reset data in db')
     res.status(204).end()
 })
 
